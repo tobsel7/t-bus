@@ -1,2 +1,2 @@
 # t-bus
-A communication middleware based on sockets and Json designed for integration into microservice projects.
+A communication middleware based on sockets and JSON designed for integration into JAVA microservice projects.
