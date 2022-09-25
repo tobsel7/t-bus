@@ -1,6 +1,7 @@
 package mf;
 
 import java.io.IOException;
+import java.util.*;
 
 /**
  * Factory used for configuring and creating a messaging bus. It advised to set all values before creating a MessageBus object.
@@ -10,7 +11,6 @@ import java.io.IOException;
 public class MessageBusFactory {
     // Default values for the message bus configuration
     private static final String DEFAULT_IDENTIFIER = "";
-    private static final MessageHandler DEFAULT_MESSAGE_HANDLER = System.out::println;
     private static final int DEFAULT_INITIAL_TIME_TO_LIVE = 5;
     private static final int DEFAULT_SERVER_PORT = 5678;
     private static final int DEFAULT_MESSAGE_CAPACITY = 1000;
@@ -18,22 +18,24 @@ public class MessageBusFactory {
 
     // Configuration parameters for the message bus
     private String identifier;
-    private MessageHandler messageHandler;
     private int initialTimeToLive;
     private int serverPort;
     private int messageCapacity;
     private boolean forwardsMessages;
+
+    // store added message handlers, which are configured after instantiation
+    private final Set<MessageHandler> messageHandlers;
 
     /**
      * Constructor for a MessageBusFactory. Initializes all configuration values with default variables.
      */
     public MessageBusFactory() {
         this.identifier = DEFAULT_IDENTIFIER;
-        this.messageHandler = DEFAULT_MESSAGE_HANDLER;
         this.initialTimeToLive = DEFAULT_INITIAL_TIME_TO_LIVE;
         this.serverPort = DEFAULT_SERVER_PORT;
         this.messageCapacity = DEFAULT_MESSAGE_CAPACITY;
         this.forwardsMessages = FORWARDS_MESSAGES;
+        this.messageHandlers = new HashSet<>();
     }
 
     /**
@@ -45,14 +47,6 @@ public class MessageBusFactory {
         this.identifier = identifier;
     }
 
-    /**
-     * Setter for the message handler. This functional interface defines the way an application handles incoming message objects.
-     *
-     * @param messageHandler A message handler implementation
-     */
-    public void setMessageHandler(MessageHandler messageHandler) {
-        this.messageHandler = messageHandler;
-    }
 
     /**
      * Setter for the time to live parameter. This should be set to the maximal amount of hops a message could need from one point to the receiver.
@@ -92,6 +86,14 @@ public class MessageBusFactory {
     }
 
     /**
+     * Message handlers can be added
+     *
+     */
+    public void addMessageHandler(MessageHandler handler) {
+        this.messageHandlers.add(handler);
+    }
+
+    /**
      * Creates a configured message bus object. This method should be called, after all parameters are correctly set.
      *
      * @return Message bus object
@@ -99,6 +101,6 @@ public class MessageBusFactory {
      * @throws IllegalArgumentException when the Identifier is not allowed
      */
     public MessageBus create() throws IOException, IllegalArgumentException {
-        return new MessageBusController(identifier, messageHandler, initialTimeToLive, messageCapacity, serverPort, forwardsMessages);
+        return new MessageBusController(identifier, initialTimeToLive, messageCapacity, serverPort, forwardsMessages);
     }
 }

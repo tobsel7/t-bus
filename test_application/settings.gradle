@@ -1,0 +1,3 @@
+rootProject.name = 'test_application'
+includeFlat("message_framework")
+

@@ -4,6 +4,8 @@ import mf.MessageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 
 /**
@@ -13,20 +15,17 @@ import java.util.concurrent.ArrayBlockingQueue;
  * @see MessageHandler
  */
 public class MessageDeliverer extends Thread {
-    private final MessageHandler handler;
-    private final ArrayBlockingQueue<Object> queue;
+    private final ArrayBlockingQueue<MessageDelivery> queue;
     private boolean running;
 
     private static Logger logger = LoggerFactory.getLogger(MessageDeliverer.class);
 
     /**
-     * Constructor for a message deliverer. Configures internal values and injects message handler to the object.
+     * Constructor for a message deliverer. Configures the number of cashed messages.
      *
-     * @param handler  Message handler defining the way an application handles incoming messages
      * @param capacity Maximal amount of messages to be cached.
      */
-    public MessageDeliverer(MessageHandler handler, int capacity) {
-        this.handler = handler;
+    public MessageDeliverer(int capacity) {
         this.queue = new ArrayBlockingQueue<>(capacity);
         running = false;
     }
@@ -37,11 +36,11 @@ public class MessageDeliverer extends Thread {
     @Override
     public void run() {
         running = true;
-        Object message;
+        MessageDelivery delivery;
         while (running) {
             try {
-                message = queue.take();
-                handler.receiveMessage(message);
+                delivery = queue.take();
+                delivery.deliver();
             } catch (Exception e) {
                 logger.debug("Could not deliver a message.");
                 e.printStackTrace();
@@ -54,8 +53,9 @@ public class MessageDeliverer extends Thread {
      *
      * @param message Message to be delivered to the application
      */
-    public void deliverMessage(Object message) {
-        queue.offer(message);
+    public void deliverMessage(Object message, MessageHandler handler) {
+        MessageDelivery delivery = new MessageDelivery(message, handler);
+        queue.offer(delivery);
     }
 
     public void stopDelivering() {

@@ -11,7 +11,6 @@ public class MessageBusFactoryTest {
         MessageBusFactory factory = new MessageBusFactory();
         factory.setIdentifier("me");
         factory.setInitialTimeToLive(5);
-        factory.setMessageHandler(System.out::println);
         factory.setServerPort(4001);
         MessageBus messageBus = factory.create();
     }

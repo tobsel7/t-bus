@@ -23,17 +23,15 @@ public class MessageIdStorageTest {
         factory.setIdentifier("mb1");
         factory.setServerPort(5101);
         MessageHandler handler1 = Mockito.mock(MessageHandler.class);
-        factory.setMessageHandler(handler1);
         MessageBus mb1 = factory.create();
         mb1.addConnection("mb2", "127.0.0.1", 5102);
-        mb1.listenToMessageType(TestMessage.class);
+        mb1.addMessageResponse(handler1);
         factory.setIdentifier("mb2");
         factory.setServerPort(5102);
         MessageHandler handler2 = Mockito.mock(MessageHandler.class);
-        factory.setMessageHandler(handler2);
         MessageBus mb2 = factory.create();
         mb2.addConnection("mb1", "127.0.0.1", 5101);
-        mb2.listenToMessageType(TestMessage.class);
+        mb2.addMessageResponse(handler2);
 
         // Publish message
         TestMessage message = new TestMessage("Hi");

@@ -1,6 +1,7 @@
 package utilities;
 
-import java.util.HashMap;
+import mf.MessageHandler;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -10,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Tobias Haider
  */
 public class SubscriptionService {
-    private final Map<String, Class<?>> subscriptions;
+    private final Map<String, MessageHandler> subscriptions;
 
     /**
      * Constructor for the subscription service. Creates empty hashmap
@@ -22,10 +23,10 @@ public class SubscriptionService {
     /**
      * Add new message type to listen to.
      *
-     * @param messageType Message type which the application wants to receive
+     * @param handler The function used to process an incoming message
      */
-    public void add(Class<?> messageType) {
-        subscriptions.put(messageType.getSimpleName(), messageType);
+    public void add(MessageHandler handler) {
+        subscriptions.put(handler.getType().getSimpleName(), handler);
     }
 
     /**
@@ -50,8 +51,12 @@ public class SubscriptionService {
      * @param messageType String corresponding to a java class
      * @return Java class which defines a message type
      */
-    Class<?> get(String messageType) {
-        return subscriptions.getOrDefault(messageType, Object.class);
+    public Class<?> getType(String messageType) {
+        return this.getHandler(messageType).getType();
+    }
+
+    public MessageHandler getHandler(String messageType) {
+        return subscriptions.getOrDefault(messageType, MessageHandler.EMPTY_HANDLER);
     }
 
     /**

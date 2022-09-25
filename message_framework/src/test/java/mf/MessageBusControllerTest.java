@@ -18,6 +18,7 @@ public class MessageBusControllerTest {
     @Test
     public void testPublishMessageTo() throws Exception {
         MessageHandler handler = Mockito.mock(MessageHandler.class);
+        Mockito.when(handler.getType()).thenReturn(TestMessage.class);
         ArgumentCaptor<Object> messageCaptor = ArgumentCaptor.forClass(Object.class);
         MessageBusFactory factory = new MessageBusFactory();
 
@@ -30,9 +31,8 @@ public class MessageBusControllerTest {
         // Set up receiver
         factory.setIdentifier("other");
         factory.setServerPort(3102);
-        factory.setMessageHandler(handler);
         MessageBus other = factory.create();
-        other.listenToMessageType(TestMessage.class);
+        other.addMessageResponse(handler);
 
         // Create and send message
         TestMessage message = new TestMessage("Hi");
@@ -46,6 +46,7 @@ public class MessageBusControllerTest {
     @Test
     public void testPublishMessageToAny() throws Exception {
         MessageHandler handler = Mockito.mock(MessageHandler.class);
+        Mockito.when(handler.getType()).thenReturn(TestMessage.class);
         ArgumentCaptor<Object> messageCaptor = ArgumentCaptor.forClass(Object.class);
         MessageBusFactory factory = new MessageBusFactory();
 
@@ -58,9 +59,8 @@ public class MessageBusControllerTest {
         // Set up receiver
         factory.setIdentifier("other");
         factory.setServerPort(3202);
-        factory.setMessageHandler(handler);
         MessageBus other = factory.create();
-        other.listenToMessageType(TestMessage.class);
+        other.addMessageResponse(handler);
 
         // Create and send message
         TestMessage message = new TestMessage("Hi");
@@ -91,11 +91,11 @@ public class MessageBusControllerTest {
 
         // Set up receiver
         MessageHandler handler = Mockito.mock(MessageHandler.class);
+        Mockito.when(handler.getType()).thenReturn(TestMessage.class);
         factory.setServerPort(3304);
         factory.setIdentifier("receiver");
-        factory.setMessageHandler(handler);
         MessageBus mb4 = factory.create();
-        mb4.listenToMessageType(TestMessage.class);
+        mb4.addMessageResponse(handler);
 
         // Send message and verify
         TestMessage message = new TestMessage("Hi");
@@ -117,9 +117,9 @@ public class MessageBusControllerTest {
         factory.setServerPort(3402);
         factory.setIdentifier("mb2");
         MessageHandler handler = Mockito.mock(MessageHandler.class);
-        factory.setMessageHandler(handler);
+        Mockito.when(handler.getType()).thenReturn(TestMessage.class);
         MessageBus mb2 = factory.create();
-        mb2.listenToMessageType(TestMessage.class);
+        mb2.addMessageResponse(handler);
 
         // Send a lot of messages
         TestMessage message = new TestMessage("Hi");

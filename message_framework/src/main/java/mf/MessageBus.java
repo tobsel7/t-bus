@@ -1,6 +1,5 @@
 package mf;
 
-import utilities.SubscriptionService;
 
 /**
  * MessageBus is the interface with which the application interacts with the messaging framework.
@@ -29,16 +28,16 @@ public interface MessageBus {
     /**
      * Subscribes to a message type. You will receive messages of this type from now on.
      *
-     * @param messageType Message type to which the application wants to listen
+     * @param handler An object defining the response to a received message
      */
-    void listenToMessageType(Class<?> messageType);
+    void addMessageResponse(MessageHandler handler);
 
     /**
      * Unsubscribe from a message type. You will not receive messages of this type anymore.
      *
      * @param messageType Message type to which the application does not want to receive anymore
      */
-    void stopListeningToMessageType(Class<?> messageType);
+    void removeMessageResponse(Class<?> messageType);
 
     /**
      * Add new outgoing connection. Messages will also be sent/forwarded to this connection from now on.
@@ -48,6 +47,13 @@ public interface MessageBus {
      * @param port       Port number of the outgoing connection
      */
     void addConnection(String identifier, String ip, int port);
+
+    /**
+     * Check, whether a connection is already present in the message bus
+     * @param identifier Identifier of a communication partner
+     * @return Found a connection for the give identifier
+     */
+    boolean hasConnection(String identifier);
 
     /**
      * Remove outgoing connection. Messages will not be sent/forwarded to this connection anymore.

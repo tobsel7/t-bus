@@ -41,6 +41,15 @@ public class Forwarder {
      *
      * @param identifier Identifier of a communication partner
      */
+    public boolean hasConnection(String identifier) {
+        return senders.containsKey(identifier);
+    }
+
+    /**
+     * Remove outgoing connection. Messages will not be sent/forwarded to this connection anymore.
+     *
+     * @param identifier Identifier of a communication partner
+     */
     public void removeConnection(String identifier) {
         senders.remove(identifier);
     }

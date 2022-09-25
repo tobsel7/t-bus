@@ -78,7 +78,7 @@ public class MessageConverter {
         String messageString = node.get("message").toString();
 
         if (subscriptions.contains(messageType)) {
-            Object message = objectMapper.readValue(messageString, subscriptions.get(messageType));
+            Object message = objectMapper.readValue(messageString, subscriptions.getType(messageType));
             return new MessagePackage(messageId, senderId, receiverId, messageType, timeToLive, message);
         } else {
             NoSuchElementException exception = new NoSuchElementException("Message type " + messageType + "not known to the messaging bus.");

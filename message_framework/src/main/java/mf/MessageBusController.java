@@ -1,7 +1,7 @@
 package mf;
 
 import network.Forwarder;
-import utilities.MessageConverter;
+import utilities.*;
 import network.Receiver;
 
 import java.io.IOException;
@@ -9,9 +9,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import utilities.MessageDeliverer;
-import utilities.MessageIdStorage;
-import utilities.SubscriptionService;
 
 /**
  * The MessageBusController class represents the controlling class of the messaging framework. I is used for connecting and configuring all other objects used by the framework.
@@ -78,7 +75,7 @@ public class MessageBusController implements MessageBus {
      * @throws IOException              when the message bus could not be created, because the network configuration is invalid
      * @throws IllegalArgumentException when the Identifier is not allowed
      */
-    MessageBusController(String identifier, MessageHandler messageHandler, int initialTimeToLive, int messageCapacity, int serverPort, boolean forwardsMessages) throws IOException, IllegalArgumentException {
+    MessageBusController(String identifier, int initialTimeToLive, int messageCapacity, int serverPort, boolean forwardsMessages) throws IOException, IllegalArgumentException {
         if (identifier.equals(ANY_RECEIVER_STRING)) {
             throw new IllegalArgumentException("The identifier cannot be :" + ANY_RECEIVER_STRING);
         }
@@ -93,7 +90,7 @@ public class MessageBusController implements MessageBus {
         this.forwardsMessages = forwardsMessages;
 
         this.messageIdStorage = new MessageIdStorage(messageCapacity * MESSAGE_STORAGE_TO_ID_STORAGE_RATIO);
-        this.deliverer = new MessageDeliverer(messageHandler, messageCapacity);
+        this.deliverer = new MessageDeliverer(messageCapacity);
         deliverer.start();
         receiver.start();
     }
@@ -134,13 +131,13 @@ public class MessageBusController implements MessageBus {
     }
 
     /**
-     * Add a class type to the subscription service. Message of this type will no longer be ignored.
+     * Add a class type to the subscription service. Messages of this type will be processed using the message handler
      *
-     * @param messageType Message type to which the application wants to listen
+     * @param handler Message type to which the application wants to listen
      */
     @Override
-    public void listenToMessageType(Class<?> messageType) {
-        subscriptions.add(messageType);
+    public void addMessageResponse(MessageHandler handler) {
+        subscriptions.add(handler);
     }
 
     /**
@@ -149,7 +146,7 @@ public class MessageBusController implements MessageBus {
      * @param messageType Message type to which the application wants to listen
      */
     @Override
-    public void stopListeningToMessageType(Class<?> messageType) {
+    public void removeMessageResponse(Class<?> messageType) {
         subscriptions.remove(messageType);
     }
 
@@ -162,6 +159,15 @@ public class MessageBusController implements MessageBus {
      */
     public void addConnection(String identifier, String ip, int port) {
         forwarder.addConnection(identifier, ip, port);
+    }
+    /**
+     * Remove outgoing connection. Messages will not be sent/forwarded to this connection anymore.
+     *
+     * @param identifier Identifier of a communication partner
+     */
+    @Override
+    public boolean hasConnection(String identifier) {
+        return forwarder.hasConnection(identifier);
     }
 
     /**
@@ -208,11 +214,12 @@ public class MessageBusController implements MessageBus {
                     forwarder.forwardMessage(senderId, receiverId, receivedMessage);
                 }
                 // Check, if the application is interested in this message type
-                if (subscriptions.contains(messageConverter.getValue(receivedMessage, "messageType"))) {
+                String messageType = messageConverter.getValue(receivedMessage, "messageType");
+                if (subscriptions.contains(messageType)) {
                     MessagePackage messagePackage = messageConverter.convertToMessagePackage(receivedMessage);
                     if (messagePackage.getReceiverId().equals(ANY_RECEIVER_STRING) || messagePackage.getReceiverId().equals(identifier)) {
                         logger.debug("Letting the message deliverer handle the message from " + messagePackage.getSenderId() + ".");
-                        deliverer.deliverMessage(messagePackage.getMessage());
+                        deliverer.deliverMessage(messagePackage.getMessage(), subscriptions.getHandler(messageType));
                     }
                 }
             }
