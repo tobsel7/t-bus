@@ -68,7 +68,6 @@ public class MessageBusController implements MessageBus {
      * Constructor for a MessageBus. Nearly all the configuration happens with the constructor call.
      *
      * @param identifier        Unique identifier of the main application
-     * @param messageHandler    Listener Interface implementation, which allows the application to define the actions performed on a message delivery
      * @param initialTimeToLive Standard amount of hops the package is allowed to make in total
      * @param serverPort        Desired port used for receiving messages from other applications
      * @param forwardsMessages  This message bus should forward messages to outgoing connections
